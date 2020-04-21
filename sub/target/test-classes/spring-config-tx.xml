@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/aop
+                           http://www.springframework.org/schema/aop/spring-aop.xsd
+                           http://www.springframework.org/schema/tx
+    					   http://www.springframework.org/schema/tx/spring-tx.xsd
+                           http://www.springframework.org/schema/context 
+       					   http://www.springframework.org/schema/context/spring-context.xsd">
+    
+    
+   	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+   		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
+   		<property name="url" value="jdbc:oracle:thin:@localhost:1521:orcl"/>
+   		<property name="username" value="zbj"/>
+   		<property name="password" value="zbj"/>
+   	</bean>
+    	
+	<bean id="accountService" class="sub.spring.tx.service.impl.AccountServiceImpl">
+    	<property name="accountDao" ref="accountDao"/>
+    </bean>
+    
+    <bean id="accountDao" class="sub.spring.tx.dao.impl.AccountDaoImpl">
+    	<property name="dataSource" ref="dataSource"/>
+    </bean>
+    
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    	<property name="dataSource" ref="dataSource"/>
+    </bean>
+    
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="transfer" read-only="true"/>
+		</tx:attributes>
+	</tx:advice>
+	
+	<aop:config>
+    	<!-- 配置切点 -->
+    	<aop:pointcut expression="execution(* sub.spring.tx.service.impl..*(..))" id="pointcut1"/>
+    	<!-- 配置切面 -->
+    	<aop:advisor advice-ref="txAdvice" pointcut-ref="pointcut1"/>
+    </aop:config>
+    
+</beans>
